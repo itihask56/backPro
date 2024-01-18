@@ -30,7 +30,7 @@ const userSchema = new Schema(
       type: String, //cloudnary url
       required: true,
     },
-    converImage: {
+    coverImage: {
       type: String,
       required: true,
     },
@@ -65,6 +65,7 @@ userSchema.methods.generateAccessToken = function () {
     {
       _id: this._id,
       email: this.email,
+      username:this.username,
       fullName: this.fullName,
     },
     process.env.ACCESS_TOKEN_SECRET,
@@ -77,8 +78,7 @@ userSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
     {
       _id: this._id,
-      email: this.email,
-      fullName: this.fullName,
+
     },
     process.env.REFRESH_TOKEN_SECRET,
     {
