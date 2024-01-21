@@ -150,30 +150,35 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User does not exists");
   }
 
-  const isPassword = await user.isPasswordCorrect(password);
-  if (!isPassword) {
-    throw new ApiError(401, "Enter correct password");
+  const isPasswordValid = await user.isPasswordCorrect(password);
+  if (!isPasswordValid) {
+    throw new ApiError(401, "Invalid user credentials");
   }
   //destructing accesstoken and refreshtoken
   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
     user._id
   );
+   
+
+  // console.log("AccesToken:", accessToken);
+  // console.log("refreshToken:", refreshToken);
 
   //extract only those data whome we want to show the user
   const loggedInUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );
+  // console.log("loggedIn User: ", loggedInUser);
 
   //cookie will be only modifiable via server and it is secure
-  const cookieOptions = {
+  const options = {
     httpOnly: true,
     secure: true,
   };
 
   return res
     .status(200)
-    .cookie("accessToken", accessToken, cookieOptions)
-    .cookie("refreshToken", refreshToken, cookieOptions)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
     .json(
       new ApiResponse(
         200,
@@ -187,12 +192,14 @@ const loginUser = asyncHandler(async (req, res) => {
     );
 });
 
+ 
 const logoutUser = asyncHandler(async (req, res) => {
+ 
   await User.findByIdAndUpdate(
     req.user._id,
     {
       $set: {
-        refreshToken: undefined, //this removes the field from documents
+        refreshToken:undefined, //this removes the field from documents
       },
     },
     {
